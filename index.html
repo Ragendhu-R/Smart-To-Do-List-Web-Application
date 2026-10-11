@@ -188,6 +188,41 @@
             </div>
           </div>
         </section>
+
+        <section class="tasks-section">
+          <div class="tasks-header">
+            <h3 class="section-title">
+              <span id="taskSectionHeading">All Tasks</span>
+              <span class="active-count-tag" id="activeFilterCount">0 tasks</span>
+            </h3>
+          </div>
+
+          <!-- Task Cards List -->
+          <ul class="task-list" id="taskList" aria-live="polite">
+            <!-- Dynamically populated via JavaScript -->
+          </ul>
+
+          <!-- Empty State (Shown when no tasks match or exist) -->
+          <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-icon-container">
+              <i class="fa-solid fa-clipboard-check empty-icon"></i>
+            </div>
+            <h3 class="empty-title" id="emptyStateTitle">No tasks found!</h3>
+            <p class="empty-description" id="emptyStateDescription">
+              You're all caught up! Click the button below to add your first task.
+            </p>
+            <div class="empty-actions">
+              <button id="emptyStateAddBtn" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i>
+                <span>Add a Task</span>
+              </button>
+              <button id="loadSampleTasksBtn" class="btn btn-secondary">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>Load Sample Tasks</span>
+              </button>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
   </div>
