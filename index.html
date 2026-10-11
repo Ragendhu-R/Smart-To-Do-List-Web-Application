@@ -227,5 +227,115 @@
     </main>
   </div>
   <script src="script.js"></script>
+  <div class="modal-overlay" id="taskModalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle" tabindex="-1">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-header-info">
+          <div class="modal-icon-badge" id="modalHeaderIcon">
+            <i class="fa-solid fa-pen-to-square"></i>
+          </div>
+          <div>
+            <h3 class="modal-title" id="modalTitle">Add New Task</h3>
+            <p class="modal-subtitle" id="modalSubtitle">Create a task to stay on top of your schedule</p>
+          </div>
+        </div>
+        <button type="button" class="btn-close" id="closeTaskModalBtn" aria-label="Close modal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="taskForm" novalidate>
+        <!-- Hidden Task ID Field (Used during edit) -->
+        <input type="hidden" id="taskIdInput" value="" />
+
+        <div class="modal-body">
+          <!-- Task Title Field -->
+          <div class="form-group">
+            <label for="taskTitleInput" class="form-label">
+              Task Title <span class="required-star">*</span>
+            </label>
+            <div class="input-with-icon">
+              <i class="fa-solid fa-heading input-icon"></i>
+              <input
+                type="text"
+                id="taskTitleInput"
+                class="form-control"
+                placeholder="e.g., Complete project presentation"
+                maxlength="100"
+                required
+              />
+            </div>
+            <div class="form-error-msg" id="titleErrorMsg">Task title is required.</div>
+          </div>
+
+          <!-- Task Description Field (Optional) -->
+          <div class="form-group">
+            <label for="taskDescInput" class="form-label">
+              Description <span class="optional-tag">(Optional)</span>
+            </label>
+            <div class="input-with-icon textarea-icon-wrapper">
+              <i class="fa-solid fa-align-left input-icon"></i>
+              <textarea
+                id="taskDescInput"
+                class="form-control"
+                rows="3"
+                placeholder="Add more details, links, or notes..."
+                maxlength="300"
+              ></textarea>
+            </div>
+            <div class="char-counter"><span id="descCharCount">0</span>/300</div>
+          </div>
+
+          <!-- Priority & Deadline Row -->
+          <div class="form-row">
+            <!-- Priority Selector -->
+            <div class="form-group flex-1">
+              <label for="taskPriorityInput" class="form-label">
+                Priority Level
+              </label>
+              <div class="priority-selector" id="prioritySelectorPills">
+                <label class="priority-pill priority-pill-low">
+                  <input type="radio" name="taskPriority" value="low" />
+                  <span class="pill-badge"><i class="fa-solid fa-circle"></i> Low</span>
+                </label>
+                <label class="priority-pill priority-pill-medium">
+                  <input type="radio" name="taskPriority" value="medium" checked />
+                  <span class="pill-badge"><i class="fa-solid fa-circle"></i> Med</span>
+                </label>
+                <label class="priority-pill priority-pill-high">
+                  <input type="radio" name="taskPriority" value="high" />
+                  <span class="pill-badge"><i class="fa-solid fa-circle"></i> High</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Due Date Picker -->
+            <div class="form-group flex-1">
+              <label for="taskDueDateInput" class="form-label">
+                Due Date <span class="optional-tag">(Optional)</span>
+              </label>
+              <div class="input-with-icon">
+                <i class="fa-regular fa-calendar input-icon"></i>
+                <input
+                  type="date"
+                  id="taskDueDateInput"
+                  class="form-control"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Footer Actions -->
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancelTaskModalBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveTaskBtn">
+            <i class="fa-solid fa-check"></i>
+            <span id="saveBtnText">Save Task</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </body>
 </html>
