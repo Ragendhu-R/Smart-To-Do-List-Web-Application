@@ -614,5 +614,372 @@ function closeDeleteModal() {
   state.taskToDeleteId = null;
 }
 
+/* --------------------------------------------------------------------------
+   9. FILTERING, SORTING & RENDERING
+   -------------------------------------------------------------------------- */
 
-// Render logic in next commit
+/**
+ * Main render function that updates stats, filtered items, and task cards.
+ */
+function renderApp() {
+  updateDashboardStats();
+  renderTaskList();
+}
+
+/**
+ * Calculates and renders statistics, badges, and progress bar.
+ */
+function updateDashboardStats() {
+  const total = state.tasks.length;
+  const completed = state.tasks.filter((t) => t.completed).length;
+  const pending = total - completed;
+
+  // Calculate overdue tasks (tasks not completed with due date < today)
+  const todayDateString = getTodayDateString();
+  const overdue = state.tasks.filter(
+    (t) => !t.completed && t.dueDate && t.dueDate < todayDateString
+  ).length;
+
+  // Update counters
+  elements.totalTasksCount.textContent = total;
+  elements.pendingTasksCount.textContent = pending;
+  elements.completedTasksCount.textContent = completed;
+  elements.overdueCount.textContent = overdue;
+
+  // Update filter tab badges
+  elements.tabBadgeAll.textContent = total;
+  elements.tabBadgePending.textContent = pending;
+  elements.tabBadgeCompleted.textContent = completed;
+
+  // Calculate percentage
+  const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+  elements.progressPercentage.textContent = `${percentage}%`;
+  elements.progressBarFill.style.width = `${percentage}%`;
+  elements.progressBarFill.parentElement.setAttribute("aria-valuenow", percentage);
+
+  // Dynamic progress caption
+  if (total === 0) {
+    elements.progressCaption.textContent = "No tasks added yet. Ready to get started?";
+  } else if (percentage === 100) {
+    elements.progressCaption.textContent = "🎉 Amazing! All tasks are completed!";
+  } else if (percentage >= 70) {
+    elements.progressCaption.textContent = "Almost there! Keep up the great work!";
+  } else if (percentage >= 30) {
+    elements.progressCaption.textContent = "Making steady progress! Step by step.";
+  } else {
+    elements.progressCaption.textContent = "Every great journey starts with a single step.";
+  }
+
+  // Clear completed button state
+  elements.clearCompletedBtn.disabled = completed === 0;
+}
+
+/**
+ * Filters, sorts, and renders the task list into the DOM.
+ */
+function renderTaskList() {
+  // 1. Filter by Status (all, pending, completed)
+  let filtered = state.tasks.filter((task) => {
+    if (state.currentFilter === "pending") return !task.completed;
+    if (state.currentFilter === "completed") return task.completed;
+    return true; // 'all'
+  });
+
+  // 2. Filter by Priority (all, high, medium, low)
+  if (state.currentPriorityFilter !== "all") {
+    filtered = filtered.filter((task) => task.priority === state.currentPriorityFilter);
+  }
+
+  // 3. Search Query Filter (Title or Description match)
+  if (state.searchQuery) {
+    filtered = filtered.filter(
+      (task) =>
+        task.title.toLowerCase().includes(state.searchQuery) ||
+        (task.description && task.description.toLowerCase().includes(state.searchQuery))
+    );
+  }
+
+  // 4. Sort Tasks
+  filtered.sort((a, b) => {
+    switch (state.currentSort) {
+      case "createdAt-asc":
+        return a.createdAt - b.createdAt;
+      case "createdAt-desc":
+        return b.createdAt - a.createdAt;
+      case "dueDate-asc":
+        // Put tasks without due date at the end
+        if (!a.dueDate) return 1;
+        if (!b.dueDate) return -1;
+        return a.dueDate.localeCompare(b.dueDate);
+      case "priority-desc": {
+        const priorityScore = { high: 3, medium: 2, low: 1 };
+        return (priorityScore[b.priority] || 0) - (priorityScore[a.priority] || 0);
+      }
+      case "title-asc":
+        return a.title.localeCompare(b.title);
+      default:
+        return b.createdAt - a.createdAt;
+    }
+  });
+
+  // Update Section Header and Count
+  const filterNames = {
+    all: "All Tasks",
+    pending: "Pending Tasks",
+    completed: "Completed Tasks",
+  };
+  elements.taskSectionHeading.textContent = filterNames[state.currentFilter] || "Tasks";
+  elements.activeFilterCount.textContent = `${filtered.length} ${filtered.length === 1 ? "task" : "tasks"}`;
+
+  // Handle Empty State
+  if (filtered.length === 0) {
+    elements.taskList.innerHTML = "";
+    elements.emptyState.style.display = "flex";
+
+    if (state.searchQuery) {
+      elements.emptyStateTitle.textContent = "No matches found";
+      elements.emptyStateDescription.textContent = `No tasks matching "${escapeHTML(state.searchQuery)}". Try searching with different keywords.`;
+    } else if (state.currentFilter === "completed") {
+      elements.emptyStateTitle.textContent = "No completed tasks yet";
+      elements.emptyStateDescription.textContent = "Tasks you mark as completed will show up here.";
+    } else if (state.currentFilter === "pending") {
+      elements.emptyStateTitle.textContent = "No pending tasks!";
+      elements.emptyStateDescription.textContent = "You're all caught up! Enjoy your free time or add a new goal.";
+    } else {
+      elements.emptyStateTitle.textContent = "Your task list is empty";
+      elements.emptyStateDescription.textContent = "Ready to boost your productivity? Add your first task or load samples!";
+    }
+    return;
+  }
+
+  // Hide empty state when tasks exist
+  elements.emptyState.style.display = "none";
+
+  // Build Task List HTML
+  elements.taskList.innerHTML = filtered
+    .map((task) => createTaskCardHTML(task))
+    .join("");
+
+  // Event handling is managed efficiently by delegation on elements.taskList
+}
+
+/**
+ * Returns HTML string representation of a single task card.
+ * @param {Object} task
+ */
+function createTaskCardHTML(task) {
+  const isCompleted = task.completed;
+  const todayStr = getTodayDateString();
+  const isOverdue = !isCompleted && task.dueDate && task.dueDate < todayStr;
+  const isDueToday = !isCompleted && task.dueDate && task.dueDate === todayStr;
+
+  // Priority Label Formats
+  const priorityLabels = {
+    high: "High",
+    medium: "Medium",
+    low: "Low",
+  };
+  const priorityClass = `badge-priority-${task.priority}`;
+
+  // Due Date Badge Logic
+  let deadlineHTML = "";
+  if (task.dueDate) {
+    let deadlineBadgeClass = "badge-deadline";
+    let deadlineIcon = '<i class="fa-regular fa-calendar"></i>';
+    let formattedDate = formatDueDate(task.dueDate);
+
+    if (isOverdue) {
+      deadlineBadgeClass += " is-overdue";
+      deadlineIcon = '<i class="fa-solid fa-triangle-exclamation"></i>';
+      formattedDate = `Overdue (${formattedDate})`;
+    } else if (isDueToday) {
+      deadlineBadgeClass += " is-today";
+      deadlineIcon = '<i class="fa-solid fa-clock"></i>';
+      formattedDate = `Due Today`;
+    }
+
+    deadlineHTML = `
+      <span class="meta-badge ${deadlineBadgeClass}">
+        ${deadlineIcon}
+        <span>${escapeHTML(formattedDate)}</span>
+      </span>
+    `;
+  }
+
+  return `
+    <li class="task-item priority-${task.priority} ${isCompleted ? "is-completed" : ""}" data-task-id="${task.id}">
+      <!-- Complete Checkbox Toggle -->
+      <div class="task-checkbox-wrapper">
+        <button 
+          type="button" 
+          class="custom-checkbox btn-toggle-complete" 
+          aria-label="${isCompleted ? "Mark as pending" : "Mark as completed"}"
+          title="${isCompleted ? "Mark as pending" : "Mark as completed"}"
+        >
+          <i class="fa-solid fa-check"></i>
+        </button>
+      </div>
+
+      <!-- Task Content Body -->
+      <div class="task-content">
+        <div class="task-title-row">
+          <span class="task-title">${escapeHTML(task.title)}</span>
+        </div>
+
+        ${
+          task.description
+            ? `<p class="task-description">${escapeHTML(task.description)}</p>`
+            : ""
+        }
+
+        <!-- Task Metadata Badges -->
+        <div class="task-meta">
+          <!-- Priority Badge -->
+          <span class="meta-badge ${priorityClass}">
+            <i class="fa-solid fa-flag"></i>
+            <span>${priorityLabels[task.priority] || "Medium"}</span>
+          </span>
+
+          <!-- Deadline Badge -->
+          ${deadlineHTML}
+        </div>
+      </div>
+
+      <!-- Action Buttons: Edit & Delete -->
+      <div class="task-actions">
+        <button 
+          type="button" 
+          class="btn-task-action action-edit btn-edit-task" 
+          title="Edit task" 
+          aria-label="Edit task"
+        >
+          <i class="fa-solid fa-pen"></i>
+        </button>
+        <button 
+          type="button" 
+          class="btn-task-action action-delete btn-delete-task" 
+          title="Delete task" 
+          aria-label="Delete task"
+        >
+          <i class="fa-solid fa-trash-can"></i>
+        </button>
+      </div>
+    </li>
+  `;
+}
+
+/* --------------------------------------------------------------------------
+   10. TOAST NOTIFICATIONS HELPER
+   -------------------------------------------------------------------------- */
+/**
+ * Displays a toast notification in bottom right corner.
+ * @param {string} message
+ * @param {"success"|"info"|"warning"|"danger"} type
+ * @param {number} duration - Time in milliseconds
+ */
+function showToast(message, type = "info", duration = 3000) {
+  const toast = document.createElement("div");
+  toast.className = `toast toast-${type}`;
+
+  const iconMap = {
+    success: "fa-solid fa-circle-check",
+    info: "fa-solid fa-circle-info",
+    warning: "fa-solid fa-triangle-exclamation",
+    danger: "fa-solid fa-circle-xmark",
+  };
+
+  const iconClass = iconMap[type] || iconMap.info;
+
+  toast.innerHTML = `
+    <i class="${iconClass} toast-icon"></i>
+    <span>${escapeHTML(message)}</span>
+  `;
+
+  elements.toastContainer.appendChild(toast);
+
+  // Auto remove toast after duration
+  setTimeout(() => {
+    toast.classList.add("toast-hiding");
+    toast.addEventListener("animationend", () => {
+      toast.remove();
+    });
+  }, duration);
+}
+
+/* --------------------------------------------------------------------------
+   11. DATE & STRING UTILITIES
+   -------------------------------------------------------------------------- */
+
+/**
+ * Returns today's date in YYYY-MM-DD format based on local time.
+ * @returns {string}
+ */
+function getTodayDateString() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+/**
+ * Returns a date string YYYY-MM-DD relative to today by offset in days.
+ * @param {number} dayOffset
+ * @returns {string}
+ */
+function getRelativeDateString(dayOffset = 0) {
+  const date = new Date();
+  date.setDate(date.getDate() + dayOffset);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+/**
+ * Formats a YYYY-MM-DD date string into human-friendly format (e.g., "Oct 12, 2026").
+ * @param {string} dateString
+ * @returns {string}
+ */
+function formatDueDate(dateString) {
+  if (!dateString) return "";
+  const parts = dateString.split("-");
+  if (parts.length !== 3) return dateString;
+
+  const year = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10) - 1;
+  const day = parseInt(parts[2], 10);
+
+  const date = new Date(year, month, day);
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+/**
+ * Escapes unsafe HTML characters to prevent XSS.
+ * @param {string} str
+ * @returns {string}
+ */
+function escapeHTML(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+/**
+ * Truncates a string with ellipsis if longer than maxLength.
+ * @param {string} text
+ * @param {number} maxLength
+ * @returns {string}
+ */
+function truncateText(text, maxLength = 25) {
+  if (!text) return "";
+  return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
+}
