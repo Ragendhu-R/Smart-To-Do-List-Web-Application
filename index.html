@@ -13,6 +13,40 @@
 </head>
 <body>
   <div class="app-layout">
+    <header class="top-nav">
+      <div class="nav-container">
+        <!-- Brand Logo & Name -->
+        <div class="brand">
+          <div class="brand-icon">
+            <i class="fa-solid fa-check-double"></i>
+          </div>
+          <div class="brand-text">
+            <h1 class="brand-title">Smart<span>Tasks</span></h1>
+            <p class="brand-subtitle">Organize & Conquer</p>
+          </div>
+        </div>
+
+        <!-- Header Actions: Date, Theme Switcher, Quick Add Button -->
+        <div class="nav-actions">
+          <div class="date-badge" id="currentDateDisplay" title="Current Date">
+            <i class="fa-regular fa-calendar-days"></i>
+            <span id="dateText">Today</span>
+          </div>
+
+          <!-- Theme Toggle Button -->
+          <button id="themeToggleBtn" class="btn-icon theme-toggle-btn" aria-label="Toggle Theme" title="Switch Light/Dark Mode">
+            <i class="fa-solid fa-moon moon-icon"></i>
+            <i class="fa-solid fa-sun sun-icon"></i>
+          </button>
+
+          <!-- Primary Add Task Button -->
+          <button id="openAddTaskModalBtn" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i>
+            <span>New Task</span>
+          </button>
+        </div>
+      </div>
+    </header>
     <main class="main-content">
       <div class="content-wrapper">
       </div>
