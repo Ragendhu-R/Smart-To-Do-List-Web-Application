@@ -1,0 +1,157 @@
+/* ==========================================================================
+   SMART TO-DO LIST - MODERN, RESPONSIVE STYLESHEET
+   Theme: Light Purple, Lavender & Crisp White with Elegant Dark Mode
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. CSS VARIABLES & DESIGN SYSTEM TOKENS
+   -------------------------------------------------------------------------- */
+:root {
+  /* Brand Theme: Purple & Lavender */
+  --primary: #7c3aed;
+  --primary-hover: #6d28d9;
+  --primary-light: #ede9fe;
+  --primary-subtle: #f5f3ff;
+  --primary-glow: rgba(124, 58, 237, 0.25);
+
+  /* Backgrounds & Surfaces (Light Mode) */
+  --bg-body: #f8f7ff;
+  --bg-surface: #ffffff;
+  --bg-surface-hover: #faf8ff;
+  --bg-input: #ffffff;
+  --bg-modal-backdrop: rgba(22, 17, 43, 0.5);
+
+  /* Text Colors */
+  --text-main: #1e1b4b;
+  --text-muted: #64748b;
+  --text-dim: #94a3b8;
+  --text-inverse: #ffffff;
+
+  /* Borders & Dividers */
+  --border-light: #e9d5ff;
+  --border-subtle: #f3e8ff;
+  --border-focus: #a855f7;
+
+  /* Status & Priority Colors */
+  --priority-high-bg: #fef2f2;
+  --priority-high-text: #dc2626;
+  --priority-high-border: #fecaca;
+
+  --priority-medium-bg: #fffbeb;
+  --priority-medium-text: #d97706;
+  --priority-medium-border: #fde68a;
+
+  --priority-low-bg: #ecfdf5;
+  --priority-low-text: #059669;
+  --priority-low-border: #a7f3d0;
+
+  --overdue-bg: #fee2e2;
+  --overdue-text: #b91c1c;
+  --overdue-border: #fca5a5;
+
+  --success-color: #10b981;
+  --danger-color: #ef4444;
+  --warning-color: #f59e0b;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(124, 58, 237, 0.05);
+  --shadow-md: 0 8px 24px rgba(124, 58, 237, 0.08);
+  --shadow-lg: 0 16px 36px rgba(124, 58, 237, 0.12);
+  --shadow-card: 0 6px 20px rgba(99, 102, 241, 0.06);
+
+  /* Radii */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+  --transition-smooth: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --------------------------------------------------------------------------
+   2. DARK THEME OVERRIDES
+   -------------------------------------------------------------------------- */
+[data-theme="dark"] {
+  --primary: #9333ea;
+  --primary-hover: #a855f7;
+  --primary-light: rgba(147, 51, 234, 0.2);
+  --primary-subtle: #1c1836;
+  --primary-glow: rgba(147, 51, 234, 0.4);
+
+  --bg-body: #0d0b18;
+  --bg-surface: #17142b;
+  --bg-surface-hover: #1e1a38;
+  --bg-input: #1f1b3a;
+  --bg-modal-backdrop: rgba(5, 4, 10, 0.75);
+
+  --text-main: #f5f3ff;
+  --text-muted: #cbd5e1;
+  --text-dim: #64748b;
+  --text-inverse: #ffffff;
+
+  --border-light: #2d2650;
+  --border-subtle: #241f42;
+  --border-focus: #c084fc;
+
+  --priority-high-bg: rgba(239, 68, 68, 0.18);
+  --priority-high-text: #f87171;
+  --priority-high-border: rgba(239, 68, 68, 0.35);
+
+  --priority-medium-bg: rgba(245, 158, 11, 0.18);
+  --priority-medium-text: #fbbf24;
+  --priority-medium-border: rgba(245, 158, 11, 0.35);
+
+  --priority-low-bg: rgba(16, 185, 129, 0.18);
+  --priority-low-text: #34d399;
+  --priority-low-border: rgba(16, 185, 129, 0.35);
+
+  --overdue-bg: rgba(220, 38, 38, 0.25);
+  --overdue-text: #fca5a5;
+  --overdue-border: rgba(220, 38, 38, 0.4);
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 16px 36px rgba(0, 0, 0, 0.6);
+  --shadow-card: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* --------------------------------------------------------------------------
+   3. BASE & RESET STYLES
+   -------------------------------------------------------------------------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg-body);
+  color: var(--text-main);
+  line-height: 1.5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  background: none;
+}
+
+ul {
+  list-style: none;
+}
+
