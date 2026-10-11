@@ -403,5 +403,216 @@ function bindEventListeners() {
   }
 }
 
+/* --------------------------------------------------------------------------
+   7. TASK CRUD OPERATIONS
+   -------------------------------------------------------------------------- */
 
-// CRUD actions coming next
+/**
+ * Handles adding a new task or saving edits to an existing task.
+ * @param {Event} event
+ */
+function handleTaskFormSubmit(event) {
+  event.preventDefault();
+
+  const title = elements.taskTitleInput.value.trim();
+  const description = elements.taskDescInput.value.trim();
+  const dueDate = elements.taskDueDateInput.value;
+  const priorityRadio = document.querySelector('input[name="taskPriority"]:checked');
+  const priority = priorityRadio ? priorityRadio.value : "medium";
+
+  // Form Validation: Ensure title is not empty
+  if (!title) {
+    elements.taskTitleInput.parentElement.parentElement.classList.add("has-error");
+    elements.titleErrorMsg.style.display = "block";
+    elements.taskTitleInput.focus();
+    return;
+  }
+
+  // Remove validation error state
+  elements.taskTitleInput.parentElement.parentElement.classList.remove("has-error");
+  elements.titleErrorMsg.style.display = "none";
+
+  if (state.editingTaskId) {
+    // EDIT MODE: Update existing task
+    const taskIndex = state.tasks.findIndex((t) => t.id === state.editingTaskId);
+    if (taskIndex !== -1) {
+      state.tasks[taskIndex] = {
+        ...state.tasks[taskIndex],
+        title,
+        description,
+        priority,
+        dueDate,
+        updatedAt: Date.now(),
+      };
+      saveTasksToStorage();
+      showToast("Task updated successfully! ✨", "success");
+    }
+  } else {
+    // CREATE MODE: Add new task
+    const newTask = {
+      id: "task-" + Date.now() + "-" + Math.random().toString(36).substr(2, 6),
+      title,
+      description,
+      priority,
+      dueDate,
+      completed: false,
+      createdAt: Date.now(),
+    };
+
+    state.tasks.unshift(newTask); // Add to beginning of array
+    saveTasksToStorage();
+    showToast("New task created! 🚀", "success");
+  }
+
+  closeTaskModal();
+  renderApp();
+}
+
+/**
+ * Toggles task status between Completed and Pending.
+ * @param {string} taskId
+ */
+function toggleTaskCompletion(taskId) {
+  const task = state.tasks.find((t) => t.id === taskId);
+  if (!task) return;
+
+  task.completed = !task.completed;
+  saveTasksToStorage();
+  renderApp();
+
+  if (task.completed) {
+    showToast(`"${truncateText(task.title, 20)}" marked completed! 🎉`, "success");
+  } else {
+    showToast(`"${truncateText(task.title, 20)}" marked as pending.`, "info");
+  }
+}
+
+/**
+ * Initiates task deletion by opening confirmation modal.
+ * @param {string} taskId
+ */
+function promptDeleteTask(taskId) {
+  const task = state.tasks.find((t) => t.id === taskId);
+  if (!task) return;
+
+  state.taskToDeleteId = taskId;
+  elements.deleteTaskTitlePreview.textContent = `"${task.title}"`;
+  elements.deleteModalOverlay.classList.add("is-open");
+  elements.confirmDeleteBtn.focus();
+}
+
+/**
+ * Confirms and executes task deletion.
+ */
+function handleConfirmDelete() {
+  if (!state.taskToDeleteId) return;
+
+  const taskIndex = state.tasks.findIndex((t) => t.id === state.taskToDeleteId);
+  if (taskIndex !== -1) {
+    const deletedTaskTitle = state.tasks[taskIndex].title;
+    state.tasks.splice(taskIndex, 1);
+    saveTasksToStorage();
+    showToast(`"${truncateText(deletedTaskTitle, 20)}" was deleted.`, "danger");
+  }
+
+  closeDeleteModal();
+  renderApp();
+}
+
+/**
+ * Clears all completed tasks from list.
+ */
+function handleClearCompleted() {
+  const completedCount = state.tasks.filter((t) => t.completed).length;
+  if (completedCount === 0) return;
+
+  const confirmClear = window.confirm(`Are you sure you want to delete all ${completedCount} completed task(s)?`);
+  if (!confirmClear) return;
+
+  state.tasks = state.tasks.filter((t) => !t.completed);
+  saveTasksToStorage();
+  showToast(`Removed ${completedCount} completed task(s).`, "info");
+  renderApp();
+}
+
+/**
+ * Re-loads sample tasks if user wants them back.
+ */
+function handleLoadSampleTasks() {
+  state.tasks = [...SAMPLE_TASKS];
+  saveTasksToStorage();
+  showToast("Sample tasks loaded successfully!", "success");
+  renderApp();
+}
+
+/* --------------------------------------------------------------------------
+   8. MODAL CONTROLLERS
+   -------------------------------------------------------------------------- */
+
+/**
+ * Opens task modal in either Create or Edit mode.
+ * @param {string|null} taskId - Task ID if editing, or null for new task
+ */
+function openTaskModal(taskId = null) {
+  state.editingTaskId = taskId;
+
+  // Clear previous errors
+  elements.taskTitleInput.parentElement.parentElement.classList.remove("has-error");
+  elements.titleErrorMsg.style.display = "none";
+
+  if (taskId) {
+    // EDIT MODE
+    const task = state.tasks.find((t) => t.id === taskId);
+    if (!task) return;
+
+    elements.modalTitle.textContent = "Edit Task";
+    elements.modalSubtitle.textContent = "Make adjustments to your task details";
+    elements.saveBtnText.textContent = "Save Changes";
+    elements.taskIdInput.value = task.id;
+    elements.taskTitleInput.value = task.title;
+    elements.taskDescInput.value = task.description || "";
+    elements.descCharCount.textContent = (task.description || "").length;
+    elements.taskDueDateInput.value = task.dueDate || "";
+
+    // Set priority radio
+    const priorityRadio = document.querySelector(`input[name="taskPriority"][value="${task.priority}"]`);
+    if (priorityRadio) priorityRadio.checked = true;
+  } else {
+    // CREATE MODE
+    elements.modalTitle.textContent = "Add New Task";
+    elements.modalSubtitle.textContent = "Create a task to stay on top of your schedule";
+    elements.saveBtnText.textContent = "Save Task";
+    elements.taskForm.reset();
+    elements.taskIdInput.value = "";
+    elements.descCharCount.textContent = "0";
+
+    // Set default priority to Medium
+    const defaultPriorityRadio = document.querySelector('input[name="taskPriority"][value="medium"]');
+    if (defaultPriorityRadio) defaultPriorityRadio.checked = true;
+  }
+
+  elements.taskModalOverlay.classList.add("is-open");
+  setTimeout(() => {
+    elements.taskTitleInput.focus();
+  }, 50);
+}
+
+/**
+ * Closes the Add / Edit task modal.
+ */
+function closeTaskModal() {
+  elements.taskModalOverlay.classList.remove("is-open");
+  state.editingTaskId = null;
+  elements.taskForm.reset();
+}
+
+/**
+ * Closes the Delete Confirmation modal.
+ */
+function closeDeleteModal() {
+  elements.deleteModalOverlay.classList.remove("is-open");
+  state.taskToDeleteId = null;
+}
+
+
+// Render logic in next commit
