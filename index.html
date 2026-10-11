@@ -59,6 +59,64 @@
             <span id="quickStatusLabel">Active & Synced</span>
           </div>
         </section>
+
+        <section class="stats-grid" aria-label="Task Statistics">
+          <!-- Total Tasks Card -->
+          <div class="stat-card total-card">
+            <div class="stat-icon-wrapper">
+              <i class="fa-solid fa-layer-group"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Total Tasks</span>
+              <span class="stat-number" id="totalTasksCount">0</span>
+            </div>
+            <div class="stat-footer">
+              <span class="stat-meta">All logged items</span>
+            </div>
+          </div>
+
+          <!-- Pending Tasks Card -->
+          <div class="stat-card pending-card">
+            <div class="stat-icon-wrapper">
+              <i class="fa-solid fa-clock"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Pending</span>
+              <span class="stat-number" id="pendingTasksCount">0</span>
+            </div>
+            <div class="stat-footer">
+              <span class="stat-meta text-warning"><span id="overdueCount">0</span> overdue</span>
+            </div>
+          </div>
+
+          <!-- Completed Tasks Card -->
+          <div class="stat-card completed-card">
+            <div class="stat-icon-wrapper">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Completed</span>
+              <span class="stat-number" id="completedTasksCount">0</span>
+            </div>
+            <div class="stat-footer">
+              <span class="stat-meta text-success">Finished tasks</span>
+            </div>
+          </div>
+
+          <!-- Overall Progress Card -->
+          <div class="stat-card progress-card">
+            <div class="stat-info-progress">
+              <div class="progress-header">
+                <span class="stat-label">Overall Progress</span>
+                <span class="progress-percentage" id="progressPercentage">0%</span>
+              </div>
+              <div class="progress-bar-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress-bar-fill" id="progressBarFill" style="width: 0%;"></div>
+              </div>
+              <p class="progress-caption" id="progressCaption">No tasks added yet</p>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
   </div>
