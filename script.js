@@ -272,5 +272,136 @@ function saveTasksToStorage() {
   }
 }
 
+/* --------------------------------------------------------------------------
+   6. EVENT LISTENERS
+   -------------------------------------------------------------------------- */
+function bindEventListeners() {
+  // Theme Toggle Button
+  elements.themeToggleBtn.addEventListener("click", toggleTheme);
 
-// Setup event listeners and CRUD operations in next commit
+  // Modal Open/Close Buttons
+  elements.openAddTaskModalBtn.addEventListener("click", () => openTaskModal());
+  elements.closeTaskModalBtn.addEventListener("click", closeTaskModal);
+  elements.cancelTaskModalBtn.addEventListener("click", closeTaskModal);
+
+  // Close modals on backdrop click
+  elements.taskModalOverlay.addEventListener("click", (e) => {
+    if (e.target === elements.taskModalOverlay) closeTaskModal();
+  });
+  elements.deleteModalOverlay.addEventListener("click", (e) => {
+    if (e.target === elements.deleteModalOverlay) closeDeleteModal();
+  });
+
+  // Close modals via 'Escape' keyboard key
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      if (elements.taskModalOverlay.classList.contains("is-open")) closeTaskModal();
+      if (elements.deleteModalOverlay.classList.contains("is-open")) closeDeleteModal();
+    }
+  });
+
+  // Task Form Submit (Add or Edit)
+  elements.taskForm.addEventListener("submit", handleTaskFormSubmit);
+
+  // Description character counter
+  elements.taskDescInput.addEventListener("input", (e) => {
+    elements.descCharCount.textContent = e.target.value.length;
+  });
+
+  // Task List Event Delegation (Handles Complete, Edit, and Delete clicks reliably)
+  elements.taskList.addEventListener("click", (event) => {
+    // 1. Toggle Task Completion
+    const toggleBtn = event.target.closest(".btn-toggle-complete");
+    if (toggleBtn) {
+      const taskItem = toggleBtn.closest(".task-item");
+      if (taskItem) {
+        const taskId = taskItem.getAttribute("data-task-id");
+        toggleTaskCompletion(taskId);
+      }
+      return;
+    }
+
+    // 2. Edit Task
+    const editBtn = event.target.closest(".btn-edit-task");
+    if (editBtn) {
+      const taskItem = editBtn.closest(".task-item");
+      if (taskItem) {
+        const taskId = taskItem.getAttribute("data-task-id");
+        openTaskModal(taskId);
+      }
+      return;
+    }
+
+    // 3. Delete Task
+    const deleteBtn = event.target.closest(".btn-delete-task");
+    if (deleteBtn) {
+      const taskItem = deleteBtn.closest(".task-item");
+      if (taskItem) {
+        const taskId = taskItem.getAttribute("data-task-id");
+        promptDeleteTask(taskId);
+      }
+      return;
+    }
+  });
+
+  // Real-time Search Input
+  elements.taskSearchInput.addEventListener("input", (e) => {
+    state.searchQuery = e.target.value.trim().toLowerCase();
+    elements.clearSearchBtn.style.display = state.searchQuery ? "flex" : "none";
+    renderApp();
+  });
+
+  // Clear Search Button
+  elements.clearSearchBtn.addEventListener("click", () => {
+    elements.taskSearchInput.value = "";
+    state.searchQuery = "";
+    elements.clearSearchBtn.style.display = "none";
+    elements.taskSearchInput.focus();
+    renderApp();
+  });
+
+  // Status Filter Tabs (All / Pending / Completed)
+  elements.filterTabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      elements.filterTabs.forEach((t) => {
+        t.classList.remove("active");
+        t.setAttribute("aria-selected", "false");
+      });
+      tab.classList.add("active");
+      tab.setAttribute("aria-selected", "true");
+
+      state.currentFilter = tab.getAttribute("data-filter");
+      renderApp();
+    });
+  });
+
+  // Priority Dropdown Filter
+  elements.priorityFilter.addEventListener("change", (e) => {
+    state.currentPriorityFilter = e.target.value;
+    renderApp();
+  });
+
+  // Sort Order Dropdown
+  elements.sortBySelect.addEventListener("change", (e) => {
+    state.currentSort = e.target.value;
+    renderApp();
+  });
+
+  // Clear Completed Tasks
+  elements.clearCompletedBtn.addEventListener("click", handleClearCompleted);
+
+  // Delete Modal Actions
+  elements.cancelDeleteBtn.addEventListener("click", closeDeleteModal);
+  elements.confirmDeleteBtn.addEventListener("click", handleConfirmDelete);
+
+  // Empty State Buttons
+  if (elements.emptyStateAddBtn) {
+    elements.emptyStateAddBtn.addEventListener("click", () => openTaskModal());
+  }
+  if (elements.loadSampleTasksBtn) {
+    elements.loadSampleTasksBtn.addEventListener("click", handleLoadSampleTasks);
+  }
+}
+
+
+// CRUD actions coming next
