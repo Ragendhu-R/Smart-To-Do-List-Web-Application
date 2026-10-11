@@ -117,6 +117,77 @@
             </div>
           </div>
         </section>
+
+        <section class="toolbar-section">
+          <div class="toolbar-top">
+            <!-- Search Input Box -->
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass search-icon"></i>
+              <input type="text" id="taskSearchInput" placeholder="Search tasks by title or description..." autocomplete="off" />
+              <button id="clearSearchBtn" class="clear-search-btn" title="Clear search" aria-label="Clear search" style="display: none;">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <!-- Filter Status Tabs -->
+            <div class="filter-tabs" role="tablist">
+              <button class="filter-tab active" data-filter="all" role="tab" aria-selected="true">
+                <i class="fa-solid fa-list-ul"></i>
+                <span>All</span>
+                <span class="badge" id="tabBadgeAll">0</span>
+              </button>
+              <button class="filter-tab" data-filter="pending" role="tab" aria-selected="false">
+                <i class="fa-regular fa-clock"></i>
+                <span>Pending</span>
+                <span class="badge" id="tabBadgePending">0</span>
+              </button>
+              <button class="filter-tab" data-filter="completed" data-testid="completed-tab" role="tab" aria-selected="false">
+                <i class="fa-regular fa-circle-check"></i>
+                <span>Completed</span>
+                <span class="badge" id="tabBadgeCompleted">0</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Toolbar Secondary: Priority & Sorting Dropdowns, Reset Filter & Clear Completed -->
+          <div class="toolbar-bottom">
+            <div class="filter-dropdowns">
+              <!-- Priority Filter -->
+              <div class="select-wrapper">
+                <label for="priorityFilter" class="select-label">
+                  <i class="fa-solid fa-flag"></i> Priority:
+                </label>
+                <select id="priorityFilter">
+                  <option value="all">All Priorities</option>
+                  <option value="high">High Priority</option>
+                  <option value="medium">Medium Priority</option>
+                  <option value="low">Low Priority</option>
+                </select>
+              </div>
+
+              <!-- Sort Order -->
+              <div class="select-wrapper">
+                <label for="sortBySelect" class="select-label">
+                  <i class="fa-solid fa-arrow-down-wide-short"></i> Sort By:
+                </label>
+                <select id="sortBySelect">
+                  <option value="createdAt-desc">Newest First</option>
+                  <option value="createdAt-asc">Oldest First</option>
+                  <option value="dueDate-asc">Due Date (Earliest)</option>
+                  <option value="priority-desc">Priority (High to Low)</option>
+                  <option value="title-asc">Alphabetical (A-Z)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="toolbar-actions">
+              <button id="clearCompletedBtn" class="btn btn-outline-danger" title="Remove all completed tasks" disabled>
+                <i class="fa-regular fa-trash-can"></i>
+                <span>Clear Completed</span>
+              </button>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
   </div>
